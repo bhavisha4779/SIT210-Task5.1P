@@ -1,54 +1,49 @@
-# SIT210 Task 5.1P
-# Simple Tkinter GUI to control 3 LEDs (Red, Green, Blue) on Raspberry Pi
-
 import tkinter as tk
 import RPi.GPIO as GPIO
 
-# Pin numbers for LEDs (BCM mode)
-RED = 17
-GREEN = 27
-BLUE = 22
-PINS = [RED, GREEN, BLUE]
-
-# Setup GPIO
+# Use BCM pin numbers
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
+
+# Define LED pins
+RED, GREEN, BLUE = 17, 27, 22
+PINS = [RED, GREEN, BLUE]
+
+# Setup pins as output and turn them off
 for pin in PINS:
     GPIO.setup(pin, GPIO.OUT)
-    GPIO.output(pin, GPIO.LOW)
+    GPIO.output(pin, 0)
 
-# Functions
-def turn_on(color_pin):
-    for pin in PINS:
-        GPIO.output(pin, GPIO.LOW)
-    GPIO.output(color_pin, GPIO.HIGH)
+# Function to turn on one LED at a time
+def turn_on(pin):
+    for p in PINS:
+        GPIO.output(p, 0)  # turn all off
+    GPIO.output(pin, 1)    # turn selected on
 
+# Cleanup on exit
 def on_exit():
-    for pin in PINS:
-        GPIO.output(pin, GPIO.LOW)
+    for p in PINS:
+        GPIO.output(p, 0)
     GPIO.cleanup()
     root.destroy()
 
-# GUI
+# GUI setup
 root = tk.Tk()
 root.title("LED Controller")
 
-label = tk.Label(root, text="Choose an LED to turn ON", font=("Arial", 12))
-label.pack(pady=10)
+tk.Label(root, text="Select an LED:").pack()
 
 # Radio buttons
-choice = tk.StringVar()
-
-tk.Radiobutton(root, text="Red", variable=choice, value="red",
-               command=lambda: turn_on(RED)).pack(anchor="w")
-tk.Radiobutton(root, text="Green", variable=choice, value="green",
-               command=lambda: turn_on(GREEN)).pack(anchor="w")
-tk.Radiobutton(root, text="Blue", variable=choice, value="blue",
-               command=lambda: turn_on(BLUE)).pack(anchor="w")
+tk.Radiobutton(root, text="Red", command=lambda: turn_on(RED)).pack(anchor="w")
+tk.Radiobutton(root, text="Green", command=lambda: turn_on(GREEN)).pack(anchor="w")
+tk.Radiobutton(root, text="Blue", command=lambda: turn_on(BLUE)).pack(anchor="w")
 
 # Exit button
-exit_button = tk.Button(root, text="Exit", command=on_exit)
-exit_button.pack(pady=10)
+tk.Button(root, text="Exit", command=on_exit).pack(pady=10)
 
+# Handle window close
 root.protocol("WM_DELETE_WINDOW", on_exit)
+
+# Start GUI loop
 root.mainloop()
+
